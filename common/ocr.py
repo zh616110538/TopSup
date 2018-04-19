@@ -11,7 +11,8 @@ from aip import AipOcr
 import io
 import base64
 from colorama import init,Fore
-
+import re
+import configparser
 # 二值化算法
 def binarizing(img, threshold):
     pixdata = img.load()
@@ -160,6 +161,8 @@ def ocr_img_tess(image, config):
     return question, choices
 
 def ocr_img_baidu(image, config):
+    image = image.rotate(-90)
+    image.show()
     # 百度OCR API  ，在 https://cloud.baidu.com/product/ocr 上注册新建应用即可
     """ 你的 APPID AK SK """
     APP_ID = config.get('baidu_api','APP_ID')
@@ -195,7 +198,7 @@ def ocr_img_baidu(image, config):
         choices = [x.replace(' ', '') for x in choices]
     else:
         print(Fore.RED + '截图区域设置错误，请重新设置' + Fore.RESET)
-        exit(0)
+        return None,None
 
     # 处理出现问题为两行或三行
     if choices[0].endswith('?'):
@@ -206,11 +209,13 @@ def ocr_img_baidu(image, config):
         question += choices[1]
         choices.pop(0)
         choices.pop(0)
-
+    question = re.sub(r"\d+\.*\s*(.+)",r"\1",question)
     return question, choices
 
 
 if __name__ == '__main__':
+    config = configparser.ConfigParser()
+    config.read('../config/configure.conf', encoding='utf-8')
     image = Image.open("../screenshot.png")
     # question, choices = ocr_img(image)
     # print("Tess 识别结果:")
@@ -218,7 +223,8 @@ if __name__ == '__main__':
     # print(choices)
     # print()
 
-    question, choices = ocr_img_baidu(image)
+    question, choices = ocr_img_baidu(image,config)
+    question = re.sub("\d+\.\s*","\0",question)
     print("baidu 识别结果:")
     print(question)
     print(choices)

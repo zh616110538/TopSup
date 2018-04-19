@@ -33,8 +33,8 @@ while True:
     #ocr_img_baidu： 题目和选项一起截，使用 baidu ocr，需配置 key
     
     # question, choices = ocr.ocr_img(img, config)
-    question, choices = ocr.ocr_img_tess(img, config)
-    # question, choices = ocr.ocr_img_baidu(img, config)
+    #question, choices = ocr.ocr_img_tess(img, config)
+    question, choices = ocr.ocr_img_baidu(img, config)
 
     #end_time2 = time.clock()
     #print(end_time2 - end_time)
@@ -47,15 +47,16 @@ while True:
     # methods.run_algorithm(1, question, choices)
     # # 用选项在问题页面中计数出现词频方法
     # methods.run_algorithm(2, question, choices)
-
-    # 多线程
-    m1 = Thread(methods.run_algorithm(0, question, choices))
-    m2 = Thread(methods.run_algorithm(1, question, choices))
-    m3 = Thread(methods.run_algorithm(2, question, choices))
-    m1.start()
-    m2.start()
-    m3.start()
-
+    if question:
+        # 多线程
+        #m1 = Thread(methods.run_algorithm(0, question, choices))
+        m2 = Thread(target=methods.run_algorithm,args=(1, question, choices))
+        m3 = Thread(target=methods.run_algorithm,args=(2, question, choices))
+        #m1.start()
+        m2.start()
+        m3.start()
+        m2.join(10)
+        m3.join(1)
     end_time3 = time.clock()
     print('用时: {0}'.format(end_time3 - t))
 
